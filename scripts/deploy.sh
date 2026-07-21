@@ -88,12 +88,13 @@ fi
 
 echo "==> Ensure storage directories"
 mkdir -p storage/framework/{sessions,views,cache/data} storage/logs bootstrap/cache
-mkdir -p storage/app/public
+mkdir -p storage/app/public storage/app/livewire-tmp
+mkdir -p public/user-uploads/{temp,logo,favicons/super-admin,meta-image}
 
 if [[ -n "${WEB_USER}" ]]; then
   echo "==> Permissions before cache rebuild (${WEB_USER})"
-  chown -R "${WEB_USER}:${WEB_USER}" storage bootstrap/cache || true
-  chmod -R ug+rwx storage bootstrap/cache || true
+  chown -R "${WEB_USER}:${WEB_USER}" storage bootstrap/cache public/user-uploads || true
+  chmod -R ug+rwx storage bootstrap/cache public/user-uploads || true
 fi
 
 echo "==> Clear & rebuild caches"
@@ -107,8 +108,8 @@ php artisan queue:restart || true
 
 if [[ -n "${WEB_USER}" ]]; then
   echo "==> Permissions after deploy (${WEB_USER})"
-  chown -R "${WEB_USER}:${WEB_USER}" storage bootstrap/cache || true
-  chmod -R ug+rwx storage bootstrap/cache || true
+  chown -R "${WEB_USER}:${WEB_USER}" storage bootstrap/cache public/user-uploads || true
+  chmod -R ug+rwx storage bootstrap/cache public/user-uploads || true
   if [[ -d public/build ]]; then
     chown -R "${WEB_USER}:${WEB_USER}" public/build || true
   fi

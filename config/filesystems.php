@@ -39,6 +39,13 @@ return [
             'throw' => false,
         ],
 
+        // Livewire temporary uploads must stay on a writable storage path (not public/user-uploads).
+        'livewire' => [
+            'driver' => 'local',
+            'root' => storage_path('app'),
+            'throw' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

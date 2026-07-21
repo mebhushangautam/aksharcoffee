@@ -233,7 +233,8 @@
                                     <div id="filePreview{{ $name }}"
                                         class="h-10 w-10 rounded-lg bg-gray-50 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
                                         <img id="faviconImg{{ $name }}" src="{{ $this->faviconPreviewUrl($name) }}" alt=""
-                                            class="h-full w-full object-contain">
+                                            class="h-full w-full object-contain"
+                                            onerror="this.style.display='none'">
                                     </div>
 
                                     <div class="text-center w-full">
@@ -243,11 +244,13 @@
 
                                         <input type="file" id="{{ $name }}" class="hidden"
                                             accept="image/png, image/gif, image/jpeg, image/webp, image/svg+xml, image/x-icon, .ico"
-                                            wire:model.defer="{{ $name }}" x-ref="{{ $name }}"
+                                            wire:model="{{ $name }}" x-ref="{{ $name }}"
                                             x-on:change="
                                                 const reader = new FileReader();
                                                 reader.onload = (e) => {
-                                                    document.getElementById('faviconImg{{ $name }}').src = e.target.result;
+                                                    const img = document.getElementById('faviconImg{{ $name }}');
+                                                    img.style.display = '';
+                                                    img.src = e.target.result;
                                                 };
                                                 reader.readAsDataURL($refs.{{ $name }}.files[0]);
                                             " />

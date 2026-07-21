@@ -4,6 +4,7 @@ namespace App\Livewire\Settings;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use App\Helper\Files;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 
@@ -43,6 +44,18 @@ class SuperadminThemeSettings extends Component
             'themeColor' => 'required',
             'photo' => 'nullable|image|max:1024',
             'darkPhoto' => 'nullable|image|max:1024',
+        ];
+    }
+
+    public function validationAttributes()
+    {
+        return [
+            'upload_fav_icon_android_chrome_192' => __('modules.settings.upload_fav_icon_android_chrome_192'),
+            'upload_fav_icon_android_chrome_512' => __('modules.settings.upload_fav_icon_android_chrome_512'),
+            'upload_fav_icon_apple_touch_icon' => __('modules.settings.upload_fav_icon_apple_touch_icon'),
+            'upload_favicon_16' => __('modules.settings.upload_favicon_16'),
+            'upload_favicon_32' => __('modules.settings.upload_favicon_32'),
+            'favicon' => __('modules.settings.favicon'),
         ];
     }
 
@@ -224,11 +237,15 @@ class SuperadminThemeSettings extends Component
     {
         $upload = $this->{$field};
 
-        if ($upload) {
-            return $upload->temporaryUrl();
+        if ($upload instanceof TemporaryUploadedFile) {
+            try {
+                return $upload->temporaryUrl();
+            } catch (\Throwable) {
+                // Fall back to the saved asset URL if the temp preview is unavailable.
+            }
         }
 
-        return $this->settings->{$field . '_url'};
+        return (string) ($this->settings->{$field . '_url'} ?? '');
     }
 
     public function render()

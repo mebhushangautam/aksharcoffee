@@ -6,6 +6,7 @@ use App\Helper\Files;
 use App\Models\GlobalSetting;
 use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Features\SupportFileUploads\WithFileUploads;
 use App\Models\Restaurant;
 
@@ -40,6 +41,18 @@ class ThemeSettings extends Component
             'upload_favicon_32' => 'nullable|image|mimes:png,jpg,jpeg,webp,svg|max:2048',
             'favicon' => 'nullable|file|mimes:ico|max:2048',
             'themeColor' => 'required',
+        ];
+    }
+
+    public function validationAttributes()
+    {
+        return [
+            'upload_fav_icon_android_chrome_192' => __('modules.settings.upload_fav_icon_android_chrome_192'),
+            'upload_fav_icon_android_chrome_512' => __('modules.settings.upload_fav_icon_android_chrome_512'),
+            'upload_fav_icon_apple_touch_icon' => __('modules.settings.upload_fav_icon_apple_touch_icon'),
+            'upload_favicon_16' => __('modules.settings.upload_favicon_16'),
+            'upload_favicon_32' => __('modules.settings.upload_favicon_32'),
+            'favicon' => __('modules.settings.favicon'),
         ];
     }
 
@@ -216,11 +229,15 @@ class ThemeSettings extends Component
     {
         $upload = $this->{$field};
 
-        if ($upload) {
-            return $upload->temporaryUrl();
+        if ($upload instanceof TemporaryUploadedFile) {
+            try {
+                return $upload->temporaryUrl();
+            } catch (\Throwable) {
+                // Fall back to the saved asset URL if the temp preview is unavailable.
+            }
         }
 
-        return $this->settings->{$field . '_url'};
+        return (string) ($this->settings->{$field . '_url'} ?? '');
     }
 
     public function render()
