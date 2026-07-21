@@ -231,8 +231,9 @@
                             <div class="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow transition-shadow duration-300 border border-gray-200 dark:border-gray-700">
                                 <div class="flex flex-col items-center space-y-2">
                                     <div id="filePreview{{ $name }}"
-                                        class="h-10 w-10 rounded-lg bg-gray-50 dark:bg-gray-700 flex items-center justify-center overflow-hidden"
-                                        style="background-image: url('{{ ${$name} ? ${$name}->temporaryUrl() :  restaurant()->{$name."_url"} }}'); background-size: contain; background-position: center; background-repeat: no-repeat;">
+                                        class="h-10 w-10 rounded-lg bg-gray-50 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                                        <img id="faviconImg{{ $name }}" src="{{ $this->faviconPreviewUrl($name) }}" alt=""
+                                            class="h-full w-full object-contain">
                                     </div>
 
                                     <div class="text-center w-full">
@@ -246,7 +247,7 @@
                                             x-on:change="
                                                 const reader = new FileReader();
                                                 reader.onload = (e) => {
-                                                    document.getElementById('filePreview{{ $name }}').style.backgroundImage = 'url(' + e.target.result + ')';
+                                                    document.getElementById('faviconImg{{ $name }}').src = e.target.result;
                                                 };
                                                 reader.readAsDataURL($refs.{{ $name }}.files[0]);
                                             " />

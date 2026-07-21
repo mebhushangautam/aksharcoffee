@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# Strip tooling footers and reject commits that still contain them.
+# Uses grep (not rg) for portability across contributor machines.
+#
+MSG_FILE="$1"
+
+if [ -z "$MSG_FILE" ] || [ ! -f "$MSG_FILE" ]; then
+  echo "commit-msg hook error: missing commit message file" >&2
+  exit 1
+fi
+
+# Remove exact lines often injected by IDE global hooks.
+sed -i.bak '/^Made-with: Cursor$/d' "$MSG_FILE"
+sed -i.bak '/^Co-authored-by:[[:space:]]*Cursor <cursoragent@cursor\.com>$/d' "$MSG_FILE"
+rm -f "${MSG_FILE}.bak"
+
+# Block common vendor-credit variants (see .cursor/rules/git-commits.mdc).
+if grep -E -n 'Made-with:[[:space:]]*Cursor|Made with Cursor|Generated with Cursor|Co-authored-by:[[:space:]]*Cursor[[:space:]]*<cursoragent@cursor\.com>' "$MSG_FILE" >/dev/null 2>&1; then
+  echo "Commit blocked: commit message contains a forbidden editor/tooling footer." >&2
+  echo "Remove lines like \"Made-with: Cursor\" or \"Co-authored-by: Cursor <cursoragent@cursor.com>\" and try again." >&2
+  exit 1
+fi
+
+exit 0

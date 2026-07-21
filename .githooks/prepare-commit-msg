@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+# Remove trailing tooling footers from the template before the editor opens.
+# Complements commit-msg for environments where the line is injected early.
+#
+COMMIT_MSG_FILE="$1"
+
+if [ -z "$COMMIT_MSG_FILE" ] || [ ! -f "$COMMIT_MSG_FILE" ]; then
+  exit 0
+fi
+
+sed -i.bak '/^Made-with: Cursor$/d' "$COMMIT_MSG_FILE"
+sed -i.bak '/^Co-authored-by:[[:space:]]*Cursor <cursoragent@cursor\.com>$/d' "$COMMIT_MSG_FILE"
+rm -f "${COMMIT_MSG_FILE}.bak"
+exit 0

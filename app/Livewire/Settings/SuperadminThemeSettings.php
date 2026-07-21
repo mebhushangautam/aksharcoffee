@@ -86,6 +86,8 @@ class SuperadminThemeSettings extends Component
 
     public function mount()
     {
+        $this->settings = GlobalSetting::first();
+
         $this->themeColor = $this->settings->theme_hex;
         $this->themeColorRgb = $this->settings->theme_rgb;
         $this->appName = $this->settings->name;
@@ -152,6 +154,7 @@ class SuperadminThemeSettings extends Component
         }
 
         $this->settings->save();
+        $this->settings->refresh();
 
         $this->reset([
             'upload_fav_icon_android_chrome_192',
@@ -164,6 +167,7 @@ class SuperadminThemeSettings extends Component
 
         cache()->forget('global_setting');
         session()->forget('restaurantOrGlobalSetting');
+        $this->dispatch('settingsUpdated');
 
         $this->redirect(route('superadmin.superadmin-settings.index') . '?tab=theme', navigate: true);
 
@@ -214,6 +218,17 @@ class SuperadminThemeSettings extends Component
         session()->forget('restaurantOrGlobalSetting');
 
         $this->redirect(route('superadmin.superadmin-settings.index') . '?tab=theme', navigate: true);
+    }
+
+    public function faviconPreviewUrl(string $field): string
+    {
+        $upload = $this->{$field};
+
+        if ($upload) {
+            return $upload->temporaryUrl();
+        }
+
+        return $this->settings->{$field . '_url'};
     }
 
     public function render()

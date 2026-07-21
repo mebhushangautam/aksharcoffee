@@ -45,6 +45,8 @@ class ThemeSettings extends Component
 
     public function mount()
     {
+        $this->settings = restaurant();
+
         $this->themeColor = $this->settings->theme_hex;
         $this->themeColorRgb = $this->settings->theme_rgb;
         $this->showLogoText = $this->settings->show_logo_text;
@@ -146,6 +148,7 @@ class ThemeSettings extends Component
 
 
         $this->settings->save();
+        $this->settings->refresh();
 
         session()->forget(['restaurant', 'timezone', 'currency']);
 
@@ -207,6 +210,17 @@ class ThemeSettings extends Component
         session()->forget(['restaurant']);
 
         $this->redirect(route('settings.index') . '?tab=theme', navigate: true);
+    }
+
+    public function faviconPreviewUrl(string $field): string
+    {
+        $upload = $this->{$field};
+
+        if ($upload) {
+            return $upload->temporaryUrl();
+        }
+
+        return $this->settings->{$field . '_url'};
     }
 
     public function render()

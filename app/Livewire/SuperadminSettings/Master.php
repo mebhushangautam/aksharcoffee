@@ -21,9 +21,10 @@ class Master extends Component
     #[On('settingsUpdated')]
     public function refreshSettings()
     {
+        cache()->forget('global_setting');
         session()->forget(['global_setting', 'restaurantOrGlobalSetting']);
 
-        $this->settings->fresh();
+        $this->settings = GlobalSetting::first();
     }
 
     public function render()
