@@ -71,6 +71,7 @@ jobs:
 
       - name: Install Composer dependencies (Vite / package discovery)
         run: |
+          mkdir -p bootstrap/cache storage/framework/{sessions,views,cache/data} storage/logs
           cp .env.example .env
           composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts
           php artisan key:generate --force
