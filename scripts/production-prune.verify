@@ -1,0 +1,8 @@
+# Must be absent after scripts/prune-production-tree.sh
+tests
+node_modules
+resources/js
+.github
+.cursor
+package.json
+scripts/deploy-from-local.sh

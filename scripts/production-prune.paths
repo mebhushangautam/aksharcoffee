@@ -1,0 +1,41 @@
+# Dev tooling and CI (restored on next git deploy)
+.github
+.cursor
+.idea
+.fleet
+.vscode
+
+# Docs, tests, frontend sources (CI/Vite build lives in public/build)
+tests
+node_modules
+resources/js
+resources/css
+
+# Seed data (already applied during deploy.sh when RUN_DB_SEED=1)
+database/seeders
+database/factories
+
+# Config / metadata not needed at runtime
+.phpactor.json
+.phpunit.cache
+.phpunit.result.cache
+phpunit.xml
+README.md
+.editorconfig
+.gitattributes
+.gitignore
+.env.example
+package.json
+package-lock.json
+pnpm-lock.yaml
+postcss.config.js
+tailwind.config.js
+vite.config.js
+
+# Deploy orchestration — kept in /var/tmp during CI, not in each site tree
+scripts/deploy-from-local.sh
+scripts/vps-ensure-checkout.sh
+scripts/vps-deploy-sites.sh
+scripts/deploy-site-lib.sh
+scripts/deploy-sites.list
+scripts/upload-build-to-s3.js

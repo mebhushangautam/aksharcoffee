@@ -1,0 +1,183 @@
+# Deploy Akshar Coffee Shop to VPS when `main` is pushed (or manually).
+#
+# Required repository secrets (Settings -> Secrets and variables -> Actions):
+#   VPS_HOST      - hostname or IP
+#   VPS_USER      - SSH user (e.g. root or deploy)
+#   VPS_SSH_KEY   - private key (PEM/OpenSSH) or base64-encoded single line
+#
+# Optional:
+#   VPS_SSH_PORT  - if SSH runs on a non-default port (default 22 when unset)
+#
+# Site path and web user: scripts/deploy-sites.list
+#
+# Manual deploy (Actions -> Deploy to VPS -> Run workflow):
+#   sites = all           -> deploy aksharcoffee
+#   sites = aksharcoffee  -> same (single site)
+#
+# Flow:
+# - GitHub builds Vite assets once (`public/build`)
+# - Uploads build archive + deploy helpers to VPS
+# - Runs scripts/vps-deploy-sites.sh over SSH (git pull + scripts/deploy.sh)
+
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      sites:
+        description: 'Sites to deploy — all or aksharcoffee'
+        required: true
+        default: all
+        type: string
+
+concurrency:
+  group: deploy-vps-aksharcoffee-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check required secrets
+        run: |
+          ok=0
+          if [ -z "${{ secrets.VPS_HOST }}" ]; then echo "::error::VPS_HOST is not set."; ok=1; fi
+          if [ -z "${{ secrets.VPS_USER }}" ]; then echo "::error::VPS_USER is not set."; ok=1; fi
+          if [ -z "${{ secrets.VPS_SSH_KEY }}" ]; then echo "::error::VPS_SSH_KEY is not set."; ok=1; fi
+          exit "$ok"
+
+      - name: Resolve deploy sites
+        id: sites
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ github.event.inputs.sites }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=all" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+          tools: composer:v2
+
+      - name: Install Composer dependencies (Vite / package discovery)
+        run: |
+          cp .env.example .env
+          composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts
+          php artisan key:generate --force
+          php artisan package:discover --ansi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Build frontend (Vite)
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Pack public/build
+        run: tar czf "frontend-build-${{ github.run_id }}.tar.gz" -C public build
+
+      - name: Prepare deploy upload files
+        run: |
+          cp scripts/vps-ensure-checkout.sh vps-ensure-checkout-aksharcoffee.sh
+          cp scripts/vps-deploy-sites.sh vps-deploy-sites-aksharcoffee.sh
+          cp scripts/deploy-site-lib.sh deploy-site-lib-aksharcoffee.sh
+          cp scripts/deploy-sites.list deploy-sites-aksharcoffee.list
+
+      - name: Configure SSH for deploy
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_SSH_PORT: ${{ secrets.VPS_SSH_PORT || '22' }}
+        run: |
+          install -m 700 -d ~/.ssh
+          KEY_FILE=~/.ssh/vps_deploy_key
+          if printf '%s' "${VPS_SSH_KEY}" | grep -q 'BEGIN OPENSSH PRIVATE KEY'; then
+            printf '%s\n' "${VPS_SSH_KEY}" > "${KEY_FILE}"
+          else
+            printf '%s' "${VPS_SSH_KEY}" | tr -d '\r\n ' | base64 -d > "${KEY_FILE}"
+          fi
+          chmod 600 "${KEY_FILE}"
+          if ! ssh-keygen -y -f "${KEY_FILE}" >/dev/null 2>&1; then
+            echo "::error::VPS_SSH_KEY is invalid."
+            exit 1
+          fi
+          ssh-keyscan -p "${VPS_SSH_PORT}" -H "${VPS_HOST}" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Upload deploy artifacts to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_PORT: ${{ secrets.VPS_SSH_PORT || '22' }}
+        run: |
+          scp -P "${VPS_SSH_PORT}" -i ~/.ssh/vps_deploy_key -o StrictHostKeyChecking=accept-new \
+            "frontend-build-${{ github.run_id }}.tar.gz" \
+            vps-ensure-checkout-aksharcoffee.sh \
+            vps-deploy-sites-aksharcoffee.sh \
+            deploy-site-lib-aksharcoffee.sh \
+            deploy-sites-aksharcoffee.list \
+            "${VPS_USER}@${VPS_HOST}:/var/tmp/"
+
+      - name: Deploy application over SSH
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_PORT: ${{ secrets.VPS_SSH_PORT || '22' }}
+          DEPLOY_SITES: ${{ steps.sites.outputs.value }}
+          FRONTEND_BUILD_ARCHIVE: /var/tmp/frontend-build-${{ github.run_id }}.tar.gz
+        run: |
+          ssh -p "${VPS_SSH_PORT}" -i ~/.ssh/vps_deploy_key -o StrictHostKeyChecking=accept-new \
+            "${VPS_USER}@${VPS_HOST}" \
+            "DEPLOY_SITES='${DEPLOY_SITES}' FRONTEND_BUILD_ARCHIVE='${FRONTEND_BUILD_ARCHIVE}' bash -s" <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          mkdir -p /tmp /var/tmp
+          chmod 1777 /tmp /var/tmp 2>/dev/null || true
+          export DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
+          export DEPLOY_SITES="${DEPLOY_SITES:-all}"
+          export BUILD_FRONTEND="${BUILD_FRONTEND:-0}"
+          export RUN_DB_SEED="${RUN_DB_SEED:-0}"
+          export FRONTEND_BUILD_ARCHIVE="${FRONTEND_BUILD_ARCHIVE:-}"
+          export CHECKOUT_HELPER="${CHECKOUT_HELPER:-/var/tmp/vps-ensure-checkout-aksharcoffee.sh}"
+          export SITES_LIST_FILE="${SITES_LIST_FILE:-/var/tmp/deploy-sites-aksharcoffee.list}"
+          DEPLOY_KEY="/root/.ssh/aksharcoffee_deploy"
+          if [[ ! -f "${DEPLOY_KEY}" ]]; then
+            echo "ERROR: Missing ${DEPLOY_KEY}. Add the VPS deploy key to GitHub Deploy keys."
+            exit 1
+          fi
+          export DEPLOY_KEY
+          export GIT_SSH_COMMAND="ssh -i ${DEPLOY_KEY} -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+          ARCHIVE="${FRONTEND_BUILD_ARCHIVE}"
+          if [[ -n "${ARCHIVE}" ]] && [[ ! -f "${ARCHIVE}" ]]; then
+            echo "ERROR: Frontend build archive missing on VPS: ${ARCHIVE}"
+            ls -la /var/tmp/frontend-build-*.tar.gz 2>/dev/null || true
+            exit 1
+          fi
+          for f in vps-deploy-sites-aksharcoffee.sh deploy-site-lib-aksharcoffee.sh deploy-sites-aksharcoffee.list vps-ensure-checkout-aksharcoffee.sh; do
+            if [[ ! -f "/var/tmp/${f}" ]]; then
+              echo "ERROR: Missing /var/tmp/${f} (SCP upload failed)."
+              exit 1
+            fi
+          done
+          mkdir -p /tmp/deploy-aksharcoffee
+          cp /var/tmp/vps-deploy-sites-aksharcoffee.sh /tmp/deploy-aksharcoffee/vps-deploy-sites.sh
+          cp /var/tmp/deploy-site-lib-aksharcoffee.sh /tmp/deploy-aksharcoffee/deploy-site-lib.sh
+          cp /var/tmp/deploy-sites-aksharcoffee.list /tmp/deploy-aksharcoffee/deploy-sites.list
+          cp /var/tmp/vps-ensure-checkout-aksharcoffee.sh /tmp/deploy-aksharcoffee/vps-ensure-checkout-aksharcoffee.sh
+          chmod +x /tmp/deploy-aksharcoffee/vps-deploy-sites.sh
+          export CHECKOUT_HELPER="/tmp/deploy-aksharcoffee/vps-ensure-checkout-aksharcoffee.sh"
+          export SITES_LIST_FILE="/tmp/deploy-aksharcoffee/deploy-sites.list"
+          bash /tmp/deploy-aksharcoffee/vps-deploy-sites.sh
+          REMOTE_SCRIPT

@@ -1,0 +1,6 @@
+# Prune scripts/manifests — removed after verification (restored on next git deploy)
+scripts/prune-production-tree.sh
+scripts/lib
+scripts/production-prune.paths
+scripts/production-prune.verify
+scripts/production-prune.tooling
