@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Laravel\Fortify\Fortify;
 use App\Models\OnboardingStep;
-use Froiden\Envato\Traits\AppBoot;
+use App\Support\InstallCheck;
 use Illuminate\Support\Facades\Hash;
 use App\Actions\Fortify\CreateNewUser;
 use Illuminate\Support\ServiceProvider;
@@ -22,8 +22,6 @@ use Illuminate\Support\Facades\Auth;
 
 class FortifyServiceProvider extends ServiceProvider
 {
-
-    use AppBoot;
 
     /**
      * Register any application services.
@@ -69,11 +67,8 @@ class FortifyServiceProvider extends ServiceProvider
     {
 
         Fortify::loginView(function () {
-            $this->showInstall();
-
+            InstallCheck::ensureDatabaseConnected();
             $this->checkMigrateStatus();
-
-            // License verification removed
 
             return view('auth.login');
         });

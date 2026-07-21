@@ -12,7 +12,7 @@ use App\Models\FrontFeature;
 use App\Models\FrontReviewSetting;
 use App\Models\LanguageSetting;
 use App\Models\Restaurant;
-use Froiden\Envato\Traits\AppBoot;
+use App\Support\InstallCheck;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use App\Models\Module;
@@ -20,8 +20,6 @@ use Nwidart\Modules\Facades\Module as  ModuleFacade;
 
 class HomeController extends Controller
 {
-
-    use AppBoot;
 
     protected $language;
 
@@ -61,7 +59,7 @@ class HomeController extends Controller
     public function landing()
     {
 
-        $this->showInstall();
+        InstallCheck::ensureDatabaseConnected();
 
         $global = global_setting();
 

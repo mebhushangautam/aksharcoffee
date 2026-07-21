@@ -9,12 +9,12 @@ use Macellan\Zip\Zip;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
-use Froiden\Envato\Traits\ModuleVerify;
+use App\Traits\ModuleLicense;
 
 class CustomModuleSettings extends Component
 {
 
-    use ModuleVerify;
+    use ModuleLicense;
 
     public $updateFilePath;
 

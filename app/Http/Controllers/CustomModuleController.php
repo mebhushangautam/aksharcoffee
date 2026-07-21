@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use Froiden\Envato\Functions\EnvatoUpdate;
-use Froiden\Envato\Traits\ModuleVerify;
+use App\Traits\ModuleLicense;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -18,7 +18,7 @@ use App\Events\ModuleStatusChanged;
 
 class CustomModuleController extends Controller
 {
-    use ModuleVerify;
+    use ModuleLicense;
 
     private function canManageCustomModules(): bool
     {
@@ -217,11 +217,11 @@ class CustomModuleController extends Controller
         abort_if(!$this->canManageCustomModules(), 403);
 
         $request->validate([
-            'purchase_code' => 'required|max:80',
+            'purchase_code' => 'nullable|max:80',
         ]);
 
         $module = $request->module;
-        $purchaseCode = $request->purchase_code;
+        $purchaseCode = $request->input('purchase_code', 'local-' . strtolower($module));
 
         return $this->modulePurchaseVerified($module, $purchaseCode);
     }

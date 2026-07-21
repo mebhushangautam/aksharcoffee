@@ -9,10 +9,6 @@ use App\Http\Controllers\KotController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\HomeController;
-
-// Override vendor verify-purchase route — redirect to login
-Route::get('verify-purchase', fn () => redirect()->route('login'))->name('verify-purchase');
-Route::post('purchase-verified', fn () => redirect()->route('login'))->name('purchase-verified');
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ShopController;
