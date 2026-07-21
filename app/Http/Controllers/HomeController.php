@@ -127,47 +127,40 @@ class HomeController extends Controller
     public function manifest()
     {
         $hash = request()->query('hash', '');
-
-        if (!empty($hash)) {
-            $slug = 'restaurant/' . $hash . '/';
-        } else {
-            $slug = 'super-admin/';
-        }
-
         $relativeUrl = urldecode(request()->query('url', ''));
-
-        $superadminUrl1 = File::exists(public_path('user-uploads/favicons/super-admin/android-chrome-192x192.png')) ? asset('user-uploads/favicons/super-admin/android-chrome-192x192.png') : asset('img/192x192.png');
-        $superadminUrl2 = File::exists(public_path('user-uploads/favicons/super-admin/android-chrome-512x512.png')) ? asset('user-uploads/favicons/super-admin/android-chrome-512x512.png') : asset('img/512x512.png');
-
-
-        $firstimagePath = public_path('user-uploads/favicons/' . $slug . 'android-chrome-192x192.png');
-        $secondimagePath = public_path('user-uploads/favicons/' . $slug . 'android-chrome-512x512.png');
-        $firsticonUrl = File::exists($firstimagePath) ? asset('user-uploads/favicons/' . $slug . 'android-chrome-192x192.png') : $superadminUrl1;
-        $secondiconUrl = File::exists($secondimagePath) ? asset('user-uploads/favicons/' . $slug . 'android-chrome-512x512.png') : $superadminUrl2;
         $globalSetting = global_setting();
-
         $restaurant = Restaurant::where('hash', $hash)->first();
 
+        if ($restaurant) {
+            $name = $restaurant->name;
+            $icon192 = $restaurant->upload_fav_icon_android_chrome_192_url;
+            $icon512 = $restaurant->upload_fav_icon_android_chrome_512_url;
+        } else {
+            $name = $globalSetting->name;
+            $icon192 = $globalSetting->upload_fav_icon_android_chrome_192_url;
+            $icon512 = $globalSetting->upload_fav_icon_android_chrome_512_url;
+        }
+
         return response()->json([
-            'name' => $restaurant ? $restaurant->name : $globalSetting->name,
-            'short_name' => $restaurant ? $restaurant->name : $globalSetting->name,
-            'description' => $restaurant ? $restaurant->name : $globalSetting->name,
+            'name' => $name,
+            'short_name' => $name,
+            'description' => $name,
             'start_url' => url($relativeUrl),
             'display' => 'standalone',
             'background_color' => '#ffffff',
             'theme_color' => '#000000',
             'icons' => [
                 [
-                    'src' => $firsticonUrl,
+                    'src' => $icon192,
                     'sizes' => '192x192',
-                    'type' => 'image/png'
+                    'type' => 'image/png',
                 ],
                 [
-                    'src' => $secondiconUrl,
+                    'src' => $icon512,
                     'sizes' => '512x512',
-                    'type' => 'image/png'
-                ]
-            ]
+                    'type' => 'image/png',
+                ],
+            ],
         ]);
     }
 

@@ -148,106 +148,46 @@ class GlobalSetting extends BaseModel
     }
 
 
-    /**
-     * Get URL for Android Chrome 192x192 favicon
-     * Returns custom favicon if available, otherwise falls back to default
-     */
+    private function faviconAssetUrl(?string $filename): string
+    {
+        if ($filename) {
+            return self::appendAssetVersion(
+                asset_url_local_s3($this->getFaviconBasePath() . $filename),
+                $this->updated_at?->getTimestamp()
+            );
+        }
+
+        return $this->logo_url;
+    }
+
     public function uploadFavIconAndroidChrome192Url(): Attribute
     {
-        return Attribute::get(function (): string {
-            // Use custom favicon if exists, otherwise use default
-            return $this->upload_fav_icon_android_chrome_192
-                ? self::appendAssetVersion(
-                    asset_url_local_s3($this->getFaviconBasePath() . $this->upload_fav_icon_android_chrome_192),
-                    $this->updated_at?->getTimestamp()
-                )
-                : asset('img/favicons/android-chrome-192x192.png');
-        });
+        return Attribute::get(fn (): string => $this->faviconAssetUrl($this->upload_fav_icon_android_chrome_192));
     }
 
-    /**
-     * Get URL for Android Chrome 512x512 favicon
-     * Returns custom favicon if available, otherwise falls back to default
-     */
     public function uploadFavIconAndroidChrome512Url(): Attribute
     {
-        return Attribute::get(function (): string {
-            // Use custom favicon if exists, otherwise use default
-            return $this->upload_fav_icon_android_chrome_512
-                ? self::appendAssetVersion(
-                    asset_url_local_s3($this->getFaviconBasePath() . $this->upload_fav_icon_android_chrome_512),
-                    $this->updated_at?->getTimestamp()
-                )
-                : asset('img/favicons/android-chrome-512x512.png');
-        });
+        return Attribute::get(fn (): string => $this->faviconAssetUrl($this->upload_fav_icon_android_chrome_512));
     }
 
-    /**
-     * Get URL for Apple Touch Icon (180x180)
-     * Returns custom icon if available, otherwise falls back to default
-     */
     public function uploadFavIconAppleTouchIconUrl(): Attribute
     {
-        return Attribute::get(function (): string {
-            // Use custom icon if exists, otherwise use default
-            return $this->upload_fav_icon_apple_touch_icon
-                ? self::appendAssetVersion(
-                    asset_url_local_s3($this->getFaviconBasePath() . $this->upload_fav_icon_apple_touch_icon),
-                    $this->updated_at?->getTimestamp()
-                )
-                : asset('img/favicons/apple-touch-icon.png');
-        });
+        return Attribute::get(fn (): string => $this->faviconAssetUrl($this->upload_fav_icon_apple_touch_icon));
     }
 
-    /**
-     * Get URL for 16x16 favicon
-     * Returns custom favicon if available, otherwise falls back to default
-     */
     public function uploadFavIcon16Url(): Attribute
     {
-        return Attribute::get(function (): string {
-            // Use custom favicon if exists, otherwise use default
-            return $this->upload_favicon_16
-                ? self::appendAssetVersion(
-                    asset_url_local_s3($this->getFaviconBasePath() . $this->upload_favicon_16),
-                    $this->updated_at?->getTimestamp()
-                )
-                : asset('img/favicons/favicon-16x16.png');
-        });
+        return Attribute::get(fn (): string => $this->faviconAssetUrl($this->upload_favicon_16));
     }
 
-    /**
-     * Get URL for 32x32 favicon
-     * Returns custom favicon if available, otherwise falls back to default
-     */
     public function uploadFavIcon32Url(): Attribute
     {
-        return Attribute::get(function (): string {
-            // Use custom favicon if exists, otherwise use default
-            return $this->upload_favicon_32
-                ? self::appendAssetVersion(
-                    asset_url_local_s3($this->getFaviconBasePath() . $this->upload_favicon_32),
-                    $this->updated_at?->getTimestamp()
-                )
-                : asset('img/favicons/favicon-32x32.png');
-        });
+        return Attribute::get(fn (): string => $this->faviconAssetUrl($this->upload_favicon_32));
     }
 
-    /**
-     * Get URL for main favicon.ico file
-     * Returns custom favicon if available, otherwise falls back to default
-     */
     public function faviconUrl(): Attribute
     {
-        return Attribute::get(function (): string {
-            // Use custom favicon if exists, otherwise use default
-            return $this->favicon
-                ? self::appendAssetVersion(
-                    asset_url_local_s3($this->getFaviconBasePath() . $this->favicon),
-                    $this->updated_at?->getTimestamp()
-                )
-                : asset('img/favicons/favicon.ico');
-        });
+        return Attribute::get(fn (): string => $this->faviconAssetUrl($this->favicon));
     }
 
     /**
