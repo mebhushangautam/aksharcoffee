@@ -1,4 +1,4 @@
-# TableTrack
+# Akshar Coffee
 
 <p align="center">
   <h1 align="center">The Complete SaaS Restaurant Management Solution</h1>
