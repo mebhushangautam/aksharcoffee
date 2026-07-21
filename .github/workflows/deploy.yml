@@ -106,14 +106,22 @@ jobs:
         run: |
           install -m 700 -d ~/.ssh
           KEY_FILE=~/.ssh/vps_deploy_key
-          if printf '%s' "${VPS_SSH_KEY}" | grep -q 'BEGIN OPENSSH PRIVATE KEY'; then
+
+          write_pem_key() {
             printf '%s\n' "${VPS_SSH_KEY}" > "${KEY_FILE}"
+          }
+
+          if printf '%s' "${VPS_SSH_KEY}" | grep -qE 'BEGIN (OPENSSH |RSA )?PRIVATE KEY'; then
+            write_pem_key
+          elif printf '%s' "${VPS_SSH_KEY}" | tr -d '\r\n ' | base64 -d > "${KEY_FILE}" 2>/dev/null; then
+            :
           else
-            printf '%s' "${VPS_SSH_KEY}" | tr -d '\r\n ' | base64 -d > "${KEY_FILE}"
+            write_pem_key
           fi
+
           chmod 600 "${KEY_FILE}"
           if ! ssh-keygen -y -f "${KEY_FILE}" >/dev/null 2>&1; then
-            echo "::error::VPS_SSH_KEY is invalid."
+            echo "::error::VPS_SSH_KEY is invalid. Paste the full private key PEM (with BEGIN/END lines), or base64-encode it: base64 -i ~/.ssh/your_key | tr -d '\\n'"
             exit 1
           fi
           ssh-keyscan -p "${VPS_SSH_PORT}" -H "${VPS_HOST}" >> ~/.ssh/known_hosts 2>/dev/null || true
