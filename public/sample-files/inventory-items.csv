@@ -1,0 +1,9 @@
+name,description,category,unit,unit_symbol,unit_purchase_price,threshold_quantity,reorder_quantity,preferred_supplier
+Chicken Breast,Boneless & skinless,Meat & Poultry,Kilogram,kg,6.5,20,50,ABC Supplier
+Ground Beef,80/20 mince,Meat & Poultry,Kilogram,kg,7.2,15,40,ABC Supplier
+Salmon Fillet,Fresh Atlantic salmon,Seafood,Kilogram,kg,14.0,10,25,Ocean Foods
+Fresh Eggs,Large grade A,Dairy & Eggs,Dozen,dz,3.6,20,60,Farm Fresh
+Heavy Cream,35% fat,Dairy & Eggs,Liter,L,4.2,10,20,Dairy Depot
+Tomatoes,Roma tomatoes,Fresh Produce,Kilogram,kg,1.8,15,30,Green Valley
+Lettuce,Iceberg lettuce,Fresh Produce,Piece,pc,0.9,20,50,Green Valley
+Ground Black Pepper,Ground spice,Herbs & Spices,Gram,g,0.02,500,1000,Spice Hub

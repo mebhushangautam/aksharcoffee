@@ -1,0 +1,509 @@
+<div class="tax-report  mx-auto px-3 sm:px-4 lg:px-6 pb-6 space-y-3 text-sm">
+    <!-- Header Section -->
+    <div class="p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div class="mb-3">
+            <h1 class="text-lg font-semibold text-gray-900 dark:text-white tracking-tight">@lang('menu.taxReport')</h1>
+            <p class="mt-0.5 text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                @php
+                    $timeFormat = restaurant()->time_format ?? 'h:i A';
+                    $formattedStartTime = \Carbon\Carbon::createFromFormat('H:i', $startTime)->format($timeFormat);
+                    $formattedEndTime = \Carbon\Carbon::createFromFormat('H:i', $endTime)->format($timeFormat);
+                @endphp
+                <strong>
+                    ({{ $startDate === $endDate
+                        ? __('modules.report.salesDataFor') . " $startDate, " . __('modules.report.timePeriod') . " $formattedStartTime - $formattedEndTime"
+                        : __('modules.report.salesDataFrom') . " $startDate " . __('app.to') . " $endDate, " . __('modules.report.timePeriodEachDay') . " $formattedStartTime - $formattedEndTime" }})
+                </strong>
+            </p>
+        </div>
+
+        <!-- Today's Tax Summary -->
+        <div class="mb-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200/80 dark:border-blue-800">
+            <h2 class="text-xs font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                <svg class="w-4 h-4 shrink-0 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Today's Tax Summary
+            </h2>
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <div class="bg-white dark:bg-gray-800 p-2.5 rounded-md border border-gray-100 dark:border-gray-700 shadow-sm">
+                    <p class="text-[11px] text-gray-600 dark:text-gray-400 mb-0.5">Today's Tax Collection</p>
+                    <p class="text-base font-bold tabular-nums text-blue-600 dark:text-blue-400">
+                        {{ currency_format($todayTaxTotal, restaurant()->currency_id) }}
+                    </p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-2.5 rounded-md border border-gray-100 dark:border-gray-700 shadow-sm">
+                    <p class="text-[11px] text-gray-600 dark:text-gray-400 mb-0.5">Today's Orders</p>
+                    <p class="text-base font-bold tabular-nums text-gray-900 dark:text-white">{{ $todayOrdersCount }}</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-2.5 rounded-md border border-gray-100 dark:border-gray-700 shadow-sm">
+                    <p class="text-[11px] text-gray-600 dark:text-gray-400 mb-0.5">Today's Revenue</p>
+                    <p class="text-base font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+                        {{ currency_format($todayRevenue, restaurant()->currency_id) }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overall Statistics -->
+        <div class="grid grid-cols-1 gap-2 mb-3 sm:grid-cols-2 lg:grid-cols-4">
+            <!-- Total Tax Card -->
+            <div class="p-3 bg-skin-base/10 rounded-lg shadow-sm dark:bg-skin-base/10 border border-skin-base/30 dark:border-skin-base/40">
+                <div class="flex items-center justify-between mb-1.5">
+                    <h3 class="text-xs font-medium text-skin-base dark:text-skin-base">@lang('modules.report.totalTaxes')</h3>
+                    <div class="p-1.5 bg-skin-base/10 rounded-md dark:bg-skin-base/10">
+                        <svg class="w-3.5 h-3.5 text-skin-base dark:text-skin-base" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke-width="0"/><g stroke-linecap="round" stroke-linejoin="round"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 13.75c0 .97.75 1.75 1.67 1.75h1.88c.8 0 1.45-.68 1.45-1.53 0-.91-.4-1.24-.99-1.45l-3.01-1.05c-.59-.21-.99-.53-.99-1.45 0-.84.65-1.53 1.45-1.53h1.88c.92 0 1.67.78 1.67 1.75M12 7.5v9"/><path d="M22 12c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2m10 4V2h-4m-1 5 5-5"/></g></svg>
+                    </div>
+                </div>
+                <p class="text-lg break-words font-bold tabular-nums text-skin-base dark:text-skin-base">
+                    {{ currency_format($totalTax, restaurant()->currency_id) }}
+                </p>
+            </div>
+
+            <!-- Total Revenue Card -->
+            <div class="p-3 bg-emerald-50 rounded-lg shadow-sm dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800">
+                <div class="flex items-center justify-between mb-1.5">
+                    <h3 class="text-xs font-medium text-emerald-600 dark:text-emerald-400">@lang('modules.report.totalRevenue')</h3>
+                    <div class="p-1.5 bg-emerald-100 rounded-md dark:bg-emerald-900/50">
+                        <svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="icon glyph"><path d="M18.22 17H9.8a2 2 0 0 1-2-1.55L5.2 4H3a1 1 0 0 1 0-2h2.2a2 2 0 0 1 2 1.55L9.8 15h8.42L20 7.76a1 1 0 0 1 2 .48l-1.81 7.25A2 2 0 0 1 18.22 17m-1.72 2a1.5 1.5 0 1 0 1.5 1.5 1.5 1.5 0 0 0-1.5-1.5m-5 0a1.5 1.5 0 1 0 1.5 1.5 1.5 1.5 0 0 0-1.5-1.5m3.21-9.29 4-4a1 1 0 1 0-1.42-1.42L14 7.59l-1.29-1.3a1 1 0 0 0-1.42 1.42l2 2a1 1 0 0 0 1.42 0" fill="currentColor"/></svg>
+                    </div>
+                </div>
+                <p class="text-lg break-words font-bold tabular-nums text-gray-800 dark:text-gray-100">
+                    {{ currency_format($totalAmount, restaurant()->currency_id) }}
+                </p>
+            </div>
+
+            <!-- Total Orders Card -->
+            <div class="p-3 bg-blue-50 rounded-lg shadow-sm dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800">
+                <div class="flex items-center justify-between mb-1.5">
+                    <h3 class="text-xs font-medium text-blue-600 dark:text-blue-400">@lang('modules.report.totalOrders')</h3>
+                    <div class="p-1.5 bg-blue-100 rounded-md dark:bg-blue-900/50">
+                        <svg class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="icon glyph"><path d="M18.22 17H9.8a2 2 0 0 1-2-1.55L5.2 4H3a1 1 0 0 1 0-2h2.2a2 2 0 0 1 2 1.55L9.8 15h8.42L20 7.76a1 1 0 0 1 2 .48l-1.81 7.25A2 2 0 0 1 18.22 17m-1.72 2a1.5 1.5 0 1 0 1.5 1.5 1.5 1.5 0 0 0-1.5-1.5m-5 0a1.5 1.5 0 1 0 1.5 1.5 1.5 1.5 0 0 0-1.5-1.5m3.21-9.29 4-4a1 1 0 1 0-1.42-1.42L14 7.59l-1.29-1.3a1 1 0 0 0-1.42 1.42l2 2a1 1 0 0 0 1.42 0" fill="currentColor"/></svg>
+                    </div>
+                </div>
+                <p class="text-lg break-words font-bold tabular-nums text-gray-800 dark:text-gray-100">
+                    {{ $totalOrders }}
+                </p>
+            </div>
+
+            <!-- Total Items Card -->
+            <div class="p-3 bg-purple-50 rounded-lg shadow-sm dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800">
+                <div class="flex items-center justify-between mb-1.5">
+                    <h3 class="text-xs font-medium text-purple-600 dark:text-purple-400">Total Items Sold</h3>
+                    <div class="p-1.5 bg-purple-100 rounded-md dark:bg-purple-900/50">
+                        <svg class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="icon glyph"><path d="M18.22 17H9.8a2 2 0 0 1-2-1.55L5.2 4H3a1 1 0 0 1 0-2h2.2a2 2 0 0 1 2 1.55L9.8 15h8.42L20 7.76a1 1 0 0 1 2 .48l-1.81 7.25A2 2 0 0 1 18.22 17m-1.72 2a1.5 1.5 0 1 0 1.5 1.5 1.5 1.5 0 0 0-1.5-1.5m-5 0a1.5 1.5 0 1 0 1.5 1.5 1.5 1.5 0 0 0-1.5-1.5m3.21-9.29 4-4a1 1 0 1 0-1.42-1.42L14 7.59l-1.29-1.3a1 1 0 0 0-1.42 1.42l2 2a1 1 0 0 0 1.42 0" fill="currentColor"/></svg>
+                    </div>
+                </div>
+                <p class="text-lg break-words font-bold tabular-nums text-gray-800 dark:text-gray-100">
+                    {{ $totalItems }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="flex flex-wrap justify-between items-start gap-3 p-3 bg-gray-50 rounded-lg dark:bg-gray-700/80 border border-gray-200 dark:border-gray-600 mb-0">
+            <div class="w-full lg:flex lg:items-start lg:mb-0">
+                <form class="sm:pr-3" action="#" method="GET">
+                    <div class="lg:flex gap-2 items-center">
+                        <x-select id="dateRangeType" class="block w-full sm:w-fit mb-2 lg:mb-0" wire:model.defer="dateRangeType" wire:change="setDateRange">
+                            <option value="today">@lang('app.today')</option>
+                            <option value="currentWeek">@lang('app.currentWeek')</option>
+                            <option value="lastWeek">@lang('app.lastWeek')</option>
+                            <option value="last7Days">@lang('app.last7Days')</option>
+                            <option value="currentMonth">@lang('app.currentMonth')</option>
+                            <option value="lastMonth">@lang('app.lastMonth')</option>
+                            <option value="currentYear">@lang('app.currentYear')</option>
+                            <option value="lastYear">@lang('app.lastYear')</option>
+                        </x-select>
+
+                        <div class="flex items-center w-full gap-2">
+                            <x-datepicker wire:model.change='startDate' placeholder="@lang('app.selectStartDate')" />
+                            <span class="mx-2 text-gray-500 dark:text-gray-100 whitespace-nowrap">@lang('app.to')</span>
+                            <x-datepicker wire:model.live='endDate' placeholder="@lang('app.selectEndDate')" />
+                        </div>
+
+                        <div class="lg:flex items-center gap-2 ms-2">
+                            <div class="w-full max-w-[15rem]">
+                                <label for="start-time" class="sr-only">@lang('modules.reservation.timeStart'):</label>
+                                <div x-on:input.debounce.500ms="$wire.set('startTime', $event.detail)">
+                                    <x-time-picker value="{{ $startTime }}" />
+                                </div>
+                            </div>
+                            <span class="mx-2 text-gray-500 dark:text-gray-100 w-10 text-center">@lang('app.to')</span>
+                            <div class="w-full max-w-[15rem]">
+                                <label for="end-time" class="sr-only">@lang('modules.reservation.timeEnd'):</label>
+                                <div x-on:input.debounce.500ms="$wire.set('endTime', $event.detail)">
+                                    <x-time-picker value="{{ $endTime }}" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div class="text-xs font-medium text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
+            <ul class="flex flex-wrap items-center gap-1 -mb-px">
+                <li>
+                    <span wire:click="$set('activeTab', 'byTaxType')" @class([
+                        'inline-flex items-center gap-1.5 cursor-pointer select-none py-2 px-3 border-b-2 rounded-t-md hover:text-gray-700 hover:border-gray-300 dark:hover:text-gray-200 text-xs sm:text-sm',
+                        'border-transparent text-gray-600 dark:text-gray-400' => $activeTab != 'byTaxType',
+                        'active border-blue-600 dark:text-blue-400 dark:border-blue-500 text-blue-600 font-semibold' => $activeTab == 'byTaxType',
+                    ])>
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        By tax type
+                    </span>
+                </li>
+                <li>
+                    <span wire:click="$set('activeTab', 'byDate')" @class([
+                        'inline-flex items-center gap-1.5 cursor-pointer select-none py-2 px-3 border-b-2 rounded-t-md hover:text-gray-700 hover:border-gray-300 dark:hover:text-gray-200 text-xs sm:text-sm',
+                        'border-transparent text-gray-600 dark:text-gray-400' => $activeTab != 'byDate',
+                        'active border-blue-600 dark:text-blue-400 dark:border-blue-500 text-blue-600 font-semibold' => $activeTab == 'byDate',
+                    ])>
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        By date
+                    </span>
+                </li>
+                <li>
+                    <span wire:click="$set('activeTab', 'byOrder')" @class([
+                        'inline-flex items-center gap-1.5 cursor-pointer select-none py-2 px-3 border-b-2 rounded-t-md hover:text-gray-700 hover:border-gray-300 dark:hover:text-gray-200 text-xs sm:text-sm',
+                        'border-transparent text-gray-600 dark:text-gray-400' => $activeTab != 'byOrder',
+                        'active border-blue-600 dark:text-blue-400 dark:border-blue-500 text-blue-600 font-semibold' => $activeTab == 'byOrder',
+                    ])>
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        By order
+                    </span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Tax Breakdown by Tax Type -->
+    @if($activeTab == 'byTaxType')
+    @if(count($taxBreakdown) > 0)
+    <div class="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Tax Breakdown by Tax Type</h2>
+            <a href="javascript:;" wire:click='exportReport("byTaxType")'
+                class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-center text-gray-900 bg-white border border-gray-300 rounded-md hover:bg-gray-100 focus:ring-2 focus:ring-primary-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-600">
+                <svg class="w-4 h-4 mr-1.5 -ml-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6 2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.414A2 2 0 0 0 15.414 6L12 2.586A2 2 0 0 0 10.586 2zm5 6a1 1 0 1 0-2 0v3.586l-1.293-1.293a1 1 0 1 0-1.414 1.414l3 3a1 1 0 0 0 1.414 0l3-3a1 1 0 0 0-1.414-1.414L11 11.586z" clip-rule="evenodd"/></svg>
+                @lang('app.export')
+            </a>
+        </div>
+        <div class="overflow-x-auto -mx-1">
+            <table class="w-full min-w-[36rem] text-xs text-left text-gray-600 dark:text-gray-400">
+                <thead class="text-[10px] uppercase tracking-wide text-gray-600 bg-gray-50 dark:bg-gray-700/80 dark:text-gray-300">
+                    <tr>
+                        <th scope="col" class="px-3 py-2">Tax Name</th>
+                        <th scope="col" class="px-3 py-2">Tax Rate (%)</th>
+                        <th scope="col" class="px-3 py-2">Total Tax Amount</th>
+                        <th scope="col" class="px-3 py-2">Items Count</th>
+                        <th scope="col" class="px-3 py-2">Orders Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($taxBreakdown as $tax)
+                        <tr class="bg-white border-b border-gray-100 dark:bg-gray-800 dark:border-gray-700/80">
+                            <td class="px-3 py-2 font-medium text-gray-900 dark:text-white">
+                                {{ $tax['name'] }}
+                            </td>
+                            <td class="px-3 py-2 tabular-nums">
+                                {{ number_format($tax['percent'], 2) }}%
+                            </td>
+                            <td class="px-3 py-2 font-semibold tabular-nums">
+                                {{ currency_format($tax['total_amount'], restaurant()->currency_id) }}
+                            </td>
+                            <td class="px-3 py-2">-</td>
+                            <td class="px-3 py-2">-</td>
+                        </tr>
+                    @endforeach
+                    <tr class="bg-gray-50 dark:bg-gray-700/60 font-semibold text-gray-900 dark:text-white">
+                        <td class="px-3 py-2" colspan="2">Total</td>
+                        <td class="px-3 py-2 tabular-nums">{{ currency_format($totalTax, restaurant()->currency_id) }}</td>
+                        <td class="px-3 py-2 tabular-nums">{{ $totalItems }}</td>
+                        <td class="px-3 py-2 tabular-nums">{{ $totalOrders }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @else
+    <div class="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div class="text-center py-6 text-sm text-gray-500 dark:text-gray-400">
+            <p>@lang('app.noDataFound')</p>
+        </div>
+    </div>
+    @endif
+    @endif
+
+    <!-- Tax Breakdown by Date -->
+    @if($activeTab == 'byDate')
+    @if(count($taxByDate) > 0)
+    <div class="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Tax Breakdown by Date</h2>
+            <a href="javascript:;" wire:click='exportReport("byDate")'
+                class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-center text-gray-900 bg-white border border-gray-300 rounded-md hover:bg-gray-100 focus:ring-2 focus:ring-primary-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-600">
+                <svg class="w-4 h-4 mr-1.5 -ml-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6 2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.414A2 2 0 0 0 15.414 6L12 2.586A2 2 0 0 0 10.586 2zm5 6a1 1 0 1 0-2 0v3.586l-1.293-1.293a1 1 0 1 0-1.414 1.414l3 3a1 1 0 0 0 1.414 0l3-3a1 1 0 0 0-1.414-1.414L11 11.586z" clip-rule="evenodd"/></svg>
+                @lang('app.export')
+            </a>
+        </div>
+        <div class="overflow-x-auto -mx-1">
+            <table class="w-full min-w-[42rem] text-xs text-left text-gray-600 dark:text-gray-400">
+                <thead class="text-[10px] uppercase tracking-wide text-gray-600 bg-gray-50 dark:bg-gray-700/80 dark:text-gray-300">
+                    <tr>
+                        <th scope="col" class="px-3 py-2">Date</th>
+                        <th scope="col" class="px-3 py-2">Total Tax</th>
+                        <th scope="col" class="px-3 py-2">Total Revenue</th>
+                        <th scope="col" class="px-3 py-2">Orders</th>
+                        <th scope="col" class="px-3 py-2">Items Sold</th>
+                        <th scope="col" class="px-3 py-2">Tax Breakdown</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($taxByDate as $dateData)
+                        <tr class="bg-white border-b border-gray-100 dark:bg-gray-800 dark:border-gray-700/80 hover:bg-gray-50 dark:hover:bg-gray-700/80 cursor-pointer transition-colors"
+                            wire:click="openDateOrdersModal('{{ $dateData['date'] }}')">
+                            <td class="px-3 py-2 font-medium text-gray-900 dark:text-white">
+                                {{ $dateData['formatted_date'] }}
+                                <svg class="w-3.5 h-3.5 inline-block ml-1 align-middle text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </td>
+                            <td class="px-3 py-2 font-semibold tabular-nums text-blue-600 dark:text-blue-400">
+                                {{ currency_format($dateData['total_tax'], restaurant()->currency_id) }}
+                            </td>
+                            <td class="px-3 py-2 font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                                {{ currency_format($dateData['total_revenue'], restaurant()->currency_id) }}
+                            </td>
+                            <td class="px-3 py-2 tabular-nums">
+                                {{ $dateData['total_orders'] }}
+                            </td>
+                            <td class="px-3 py-2 tabular-nums">
+                                {{ $dateData['total_items'] }}
+                            </td>
+                            <td class="px-3 py-2">
+                                @if(count($dateData['tax_breakdown']) > 0)
+                                    <div class="space-y-0.5">
+                                        @foreach($dateData['tax_breakdown'] as $taxName => $taxInfo)
+                                            <div class="text-[11px] leading-snug">
+                                                <span class="font-medium">{{ $taxName }}</span>
+                                                <span class="text-green-600 dark:text-green-400">({{ number_format($taxInfo['percent'], 2) }}%)</span>:
+                                                <span class="font-semibold tabular-nums">{{ currency_format($taxInfo['amount'], restaurant()->currency_id) }}</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span class="text-gray-400 text-[11px]">No tax breakdown</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                    <tr class="bg-gray-50 dark:bg-gray-700/60 font-semibold text-gray-900 dark:text-white">
+                        <td class="px-3 py-2">Total</td>
+                        <td class="px-3 py-2 tabular-nums text-blue-600 dark:text-blue-400">
+                            {{ currency_format($totalTax, restaurant()->currency_id) }}
+                        </td>
+                        <td class="px-3 py-2 tabular-nums text-emerald-600 dark:text-emerald-400">
+                            {{ currency_format($totalAmount, restaurant()->currency_id) }}
+                        </td>
+                        <td class="px-3 py-2 tabular-nums">{{ $totalOrders }}</td>
+                        <td class="px-3 py-2 tabular-nums">{{ $totalItems }}</td>
+                        <td class="px-3 py-2">-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @else
+    <div class="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div class="text-center py-6 text-sm text-gray-500 dark:text-gray-400">
+            <p>@lang('app.noDataFound')</p>
+        </div>
+    </div>
+    @endif
+    @endif
+
+    <!-- Tax Details by Order -->
+    @if($activeTab == 'byOrder')
+    <div class="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Tax Details by Order</h2>
+            <a href="javascript:;" wire:click='exportReport("byOrder")'
+                class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-center text-gray-900 bg-white border border-gray-300 rounded-md hover:bg-gray-100 focus:ring-2 focus:ring-primary-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-600">
+                <svg class="w-4 h-4 mr-1.5 -ml-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6 2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.414A2 2 0 0 0 15.414 6L12 2.586A2 2 0 0 0 10.586 2zm5 6a1 1 0 1 0-2 0v3.586l-1.293-1.293a1 1 0 1 0-1.414 1.414l3 3a1 1 0 0 0 1.414 0l3-3a1 1 0 0 0-1.414-1.414L11 11.586z" clip-rule="evenodd"/></svg>
+                @lang('app.export')
+            </a>
+        </div>
+        <div class="overflow-x-auto -mx-1">
+            <table class="w-full min-w-[42rem] text-xs text-left text-gray-600 dark:text-gray-400">
+                <thead class="text-[10px] uppercase tracking-wide text-gray-600 bg-gray-50 dark:bg-gray-700/80 dark:text-gray-300">
+                    <tr>
+                        <th scope="col" class="px-3 py-2">Order #</th>
+                        <th scope="col" class="px-3 py-2">Date & Time</th>
+                        <th scope="col" class="px-3 py-2">Subtotal</th>
+                        <th scope="col" class="px-3 py-2">Tax Breakdown</th>
+                        <th scope="col" class="px-3 py-2">Total Tax</th>
+                        <th scope="col" class="px-3 py-2">Total Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($orderDetails as $orderDetail)
+                        <tr class="bg-white border-b border-gray-100 dark:bg-gray-800 dark:border-gray-700/80">
+                            <td class="px-3 py-2 font-medium text-gray-900 dark:text-white">
+                                #{{ $orderDetail['order']->order_number }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap">
+                                @php
+                                    $dateFormat = restaurant()->date_format ?? 'd-m-Y';
+                                    $timeFormat = restaurant()->time_format ?? 'h:i A';
+                                    $orderDate = \Carbon\Carbon::parse($orderDetail['order']->date_time)->setTimezone(timezone());
+                                @endphp
+                                {{ $orderDate->format($dateFormat . ' ' . $timeFormat) }}
+                            </td>
+                            <td class="px-3 py-2 tabular-nums">
+                                {{ currency_format($orderDetail['subtotal'], restaurant()->currency_id) }}
+                            </td>
+                            <td class="px-3 py-2">
+                                @if(count($orderDetail['tax_breakdown']) > 0)
+                                    <div class="space-y-0.5">
+                                        @foreach($orderDetail['tax_breakdown'] as $taxName => $taxInfo)
+                                            <div class="text-[11px] leading-snug">
+                                                <span class="font-medium">{{ $taxName }}</span>
+                                                <span class="text-green-600 dark:text-green-400">({{ number_format($taxInfo['percent'], 2) }}%)</span>:
+                                                <span class="font-semibold tabular-nums">{{ currency_format($taxInfo['amount'], restaurant()->currency_id) }}</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span class="text-gray-400 text-[11px]">No tax breakdown</span>
+                                @endif
+                            </td>
+                            <td class="px-3 py-2 font-semibold tabular-nums">
+                                {{ currency_format($orderDetail['tax_amount'], restaurant()->currency_id) }}
+                            </td>
+                            <td class="px-3 py-2 font-semibold tabular-nums">
+                                {{ currency_format($orderDetail['total'], restaurant()->currency_id) }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-3 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                                @lang('app.noDataFound')
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
+
+    <!-- Date Orders Modal -->
+    <x-dialog-modal wire:model.live="showDateOrdersModal" maxWidth="4xl" maxHeight="full">
+        <x-slot name="title">
+            <div class="flex items-center gap-2 text-base font-semibold">
+                <svg class="w-4 h-4 shrink-0 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <span class="leading-tight">Tax Details for {{ $selectedDate ? \Carbon\Carbon::createFromFormat('Y-m-d', $selectedDate)->format(restaurant()->date_format ?? 'd-m-Y') : '' }}</span>
+            </div>
+        </x-slot>
+
+        <x-slot name="content">
+            @if(count($selectedDateOrders) > 0)
+            <div class="overflow-x-auto max-h-[min(70vh,32rem)] -mx-1">
+                <table class="w-full min-w-[36rem] text-xs text-left text-gray-600 dark:text-gray-400">
+                    <thead class="text-[10px] uppercase tracking-wide text-gray-600 bg-gray-50 dark:bg-gray-700/80 dark:text-gray-300 sticky top-0 z-[1] shadow-sm">
+                        <tr>
+                            <th scope="col" class="px-3 py-2">Order #</th>
+                            <th scope="col" class="px-3 py-2">Date & Time</th>
+                            <th scope="col" class="px-3 py-2">Subtotal</th>
+                            <th scope="col" class="px-3 py-2">Tax Breakdown</th>
+                            <th scope="col" class="px-3 py-2">Total Tax</th>
+                            <th scope="col" class="px-3 py-2">Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($selectedDateOrders as $orderDetail)
+                            <tr class="bg-white border-b border-gray-100 dark:bg-gray-800 dark:border-gray-700/80 hover:bg-gray-50 dark:hover:bg-gray-600/50">
+                                <td class="px-3 py-2 font-medium text-gray-900 dark:text-white">
+                                    #{{ $orderDetail['order']->order_number }}
+                                </td>
+                                <td class="px-3 py-2 whitespace-nowrap">
+                                    @php
+                                        $dateFormat = restaurant()->date_format ?? 'd-m-Y';
+                                        $timeFormat = restaurant()->time_format ?? 'h:i A';
+                                        $orderDate = \Carbon\Carbon::parse($orderDetail['order']->date_time)->setTimezone(timezone());
+                                    @endphp
+                                    {{ $orderDate->format($dateFormat . ' ' . $timeFormat) }}
+                                </td>
+                                <td class="px-3 py-2 tabular-nums">
+                                    {{ currency_format($orderDetail['subtotal'], restaurant()->currency_id) }}
+                                </td>
+                                <td class="px-3 py-2">
+                                    @if(count($orderDetail['tax_breakdown']) > 0)
+                                        <div class="space-y-0.5">
+                                            @foreach($orderDetail['tax_breakdown'] as $taxName => $taxInfo)
+                                                <div class="text-[11px] leading-snug">
+                                                    <span class="font-medium">{{ $taxName }}</span>
+                                                    <span class="text-green-600 dark:text-green-400">({{ number_format($taxInfo['percent'], 2) }}%)</span>:
+                                                    <span class="font-semibold tabular-nums">{{ currency_format($taxInfo['amount'], restaurant()->currency_id) }}</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <span class="text-gray-400 text-[11px]">No tax breakdown</span>
+                                    @endif
+                                </td>
+                                <td class="px-3 py-2 font-semibold tabular-nums text-blue-600 dark:text-blue-400">
+                                    {{ currency_format($orderDetail['tax_amount'], restaurant()->currency_id) }}
+                                </td>
+                                <td class="px-3 py-2 font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                                    {{ currency_format($orderDetail['total'], restaurant()->currency_id) }}
+                                </td>
+                            </tr>
+                        @endforeach
+                        <tr class="bg-gray-50 dark:bg-gray-700/60 font-semibold text-gray-900 dark:text-white">
+                            <td class="px-3 py-2" colspan="2">Total</td>
+                            <td class="px-3 py-2 tabular-nums">
+                                {{ currency_format($selectedDateTotals['subtotal'], restaurant()->currency_id) }}
+                            </td>
+                            <td class="px-3 py-2">-</td>
+                            <td class="px-3 py-2 tabular-nums text-blue-600 dark:text-blue-400">
+                                {{ currency_format($selectedDateTotals['tax'], restaurant()->currency_id) }}
+                            </td>
+                            <td class="px-3 py-2 tabular-nums text-emerald-600 dark:text-emerald-400">
+                                {{ currency_format($selectedDateTotals['total'], restaurant()->currency_id) }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            @else
+            <div class="text-center py-6 text-sm text-gray-500 dark:text-gray-400">
+                <svg class="w-9 h-9 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <p>No orders found for this date.</p>
+            </div>
+            @endif
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="closeDateOrdersModal" wire:loading.attr="disabled">
+                {{ __('app.close') }}
+            </x-secondary-button>
+        </x-slot>
+    </x-dialog-modal>
+
+</div>
