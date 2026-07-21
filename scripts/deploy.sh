@@ -14,7 +14,7 @@ RUN_DB_SEED="${RUN_DB_SEED:-0}"
 DB_SEED_CLASS="${DB_SEED_CLASS:-}"
 DB_SEED_CLASSES="${DB_SEED_CLASSES:-}"
 FRONTEND_BUILD_ARCHIVE="${FRONTEND_BUILD_ARCHIVE:-}"
-WEB_USER="${WEB_USER:-www-data}"
+WEB_USER="${WEB_USER:-aksharcoffeeshop-system}"
 DEPLOY_KEY="${DEPLOY_KEY:-/root/.ssh/aksharcoffee_deploy}"
 
 if [[ -f "${DEPLOY_KEY}" ]]; then

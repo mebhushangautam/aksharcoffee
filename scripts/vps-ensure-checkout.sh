@@ -2,7 +2,7 @@
 # Ensure VPS app directory is a git checkout (recover after files removed). Preserves .env.
 set -euo pipefail
 
-APP="${VPS_APP_PATH:-/var/www/aksharcoffee}"
+APP="${VPS_APP_PATH:-/home/aksharcoffeeshop-system/htdocs/system.aksharcoffeeshop.com}"
 DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
 ENV_BACKUP="${ENV_BACKUP:-/var/tmp/aksharcoffee.env.backup}"
 DEPLOY_KEY="${DEPLOY_KEY:-/root/.ssh/aksharcoffee_deploy}"

@@ -1,3 +1,2 @@
 # id|label|app_path|web_user
-# Edit app_path and web_user to match your VPS (CloudPanel site user + htdocs path).
-aksharcoffee|Akshar Coffee Shop|/var/www/aksharcoffee|www-data
+aksharcoffee|Akshar Coffee Shop|/home/aksharcoffeeshop-system/htdocs/system.aksharcoffeeshop.com|aksharcoffeeshop-system
